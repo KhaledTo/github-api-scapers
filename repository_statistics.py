@@ -7,6 +7,14 @@ import gzip
 from collections import defaultdict
 import pprint
 
+def smart_open(filename,*args,**kwargs):
+    if filename.endswith(".gz"):
+        open_func = gzip.open
+    else:
+        open_func = open
+    return open_func(filename,*args,**kwargs)
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print "Usage: repository_statistics.py [input filename] "
@@ -14,14 +22,9 @@ if __name__ == '__main__':
     filename = sys.argv[1]
 
 
-    if filename.endswith(".gz"):
-        open_func = gzip.open
-    else:
-        open_func = open
-
     language_distribution =  defaultdict(lambda :0)
 
-    with open_func(filename,"rb") as input_file:
+    with smart_open(filename,"rb") as input_file:
         for line in input_file:
             try:
                 user_repositories = json.loads(line)

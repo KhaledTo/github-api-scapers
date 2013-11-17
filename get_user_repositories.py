@@ -7,11 +7,12 @@ import random
 import os
 import sys
 import httplib
+import gzip
 
 from settings import ACCESS_TOKEN
 
 usage = """
-Usage: get_user_details.py [user JSON filename] [output JSON filename] [last ID|optional]
+Usage: get_user_repositories.py [user JSON filename] [output JSON filename] [last ID|optional]
 
 By default, the script appends to the output file.
 """
@@ -22,6 +23,14 @@ def establish_connection():
 	global con
 	print "Establishing connection in process %d..." % os.getpid()
 	con = httplib.HTTPSConnection('api.github.com',443)
+
+
+def smart_open(filename,*args,**kwargs):
+    if filename.endswith(".gz"):
+        open_func = gzip.open
+    else:
+        open_func = open
+    return open_func(filename,*args,**kwargs)
 
 def get_user_repos(user_login):
     global con
@@ -95,15 +104,17 @@ if __name__ == '__main__':
         running_tasks = 0
 
         task_list = []
-        with open(users_filename,"rb") as users_file, \
-                 open(output_filename,"ab") as output_file:
+        with smart_open(users_filename,"rb") as users_file, \
+                 smart_open(output_filename,"ab") as output_file:
                 try:
                     while True:
                                 try:
-                                        (login,full_name,hireable,email,location,repos,followers) = users_file.readline().split(";")
+                                        user = json.loads(users_file.readline())
                                 except ValueError:
                                         print "Done"
                                         break
+                                if user['id'] <= since_id:
+                                        continue
                                 while True:
                                         time.sleep(0.1)
                                         for task in task_list:
@@ -120,8 +131,8 @@ if __name__ == '__main__':
                                                             output_file.write(result+"\n")
                                                             output_file.flush()
                                         if len(task_list) < pool_size:
-                                                task = pool.apply_async(get_user_repos,[login])
-                                                task.login = login
+                                                task = pool.apply_async(get_user_repos,[user['login']])
+                                                task.login = user['login']
                                                 task_list.append(task)
                                                 break
                 except KeyboardInterrupt:
