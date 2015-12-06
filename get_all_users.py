@@ -28,9 +28,9 @@ if __name__ == '__main__':
 				remaining_requests = int(r.headers['x-ratelimit-remaining'])
 				reset_time = datetime.datetime.fromtimestamp(int(r.headers['x-ratelimit-reset']))
 				waiting_time = (reset_time-datetime.datetime.now()).total_seconds()
-				print "%d requests remaining, reset in %d minutes..." % (remaining_requests,math.ceil(waiting_time/60.0))
+				print "{0:d} requests remaining, reset in {1:d} minutes...".format(remaining_requests, math.ceil(waiting_time/60.0))
 				if remaining_requests == 0:
-					print "Allowed requests depleted, waiting %d minutes and %d seconds before continuing..." % (math.floor(waiting_time/60.0),waiting_time % 60)
+					print "Allowed requests depleted, waiting {0:d} minutes and {1:d} seconds before continuing...".format(math.floor(waiting_time/60.0), waiting_time % 60)
 					time.sleep(waiting_time)
 					continue
 				if r.status_code != 200:

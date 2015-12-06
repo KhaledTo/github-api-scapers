@@ -21,7 +21,7 @@ con = None
 
 def establish_connection():
 	global con
-	print "Establishing connection in process %d..." % os.getpid()
+	print "Establishing connection in process {0:d}...".format(os.getpid())
 	con = httplib.HTTPSConnection('api.github.com',443)
 
 
@@ -38,11 +38,11 @@ def get_user_repos(user_login):
         page = 1
         all_user_repositories = []
         while True:
-            print "Getting details for %s" % (user_login)
+            print "Getting details for {0!s}".format((user_login))
             if not con:
                 establish_connection()
             try:
-                con.request('GET','/users/%s/repos?access_token=%s&page=%d' % (user_login,ACCESS_TOKEN,page))
+                con.request('GET','/users/{0!s}/repos?access_token={1!s}&page={2:d}'.format(user_login, ACCESS_TOKEN, page))
                 page+=1
                 response = con.getresponse()
             except:
@@ -51,7 +51,7 @@ def get_user_repos(user_login):
                 con = None
                 raise Exception("Connection failed!")
             if response.status == 404:
-                print "User %s does not exist..." % user_login
+                print "User {0!s} does not exist...".format(user_login)
                 return ""
             elif response.status != 200 and response.status != 403:
                 print response.status,response.read()
@@ -60,7 +60,7 @@ def get_user_repos(user_login):
                 raise Exception("connection failed!")
             remaining_requests = int(response.getheader('x-ratelimit-remaining'))
             reset_time = datetime.datetime.fromtimestamp(int(response.getheader('x-ratelimit-reset')))
-            print "%d requests remaining..." % (remaining_requests)
+            print "{0:d} requests remaining...".format((remaining_requests))
             if remaining_requests == 0:
                 print "Allowed requests depleted, waiting..."
                 while True:
@@ -70,7 +70,7 @@ def get_user_repos(user_login):
                     waiting_time_seconds = (reset_time-datetime.datetime.now()).total_seconds()
                     waiting_time_minutes = int(waiting_time_seconds/60)
                     waiting_time_seconds_remainder = int(waiting_time_seconds) % 60
-                    print "%d minutes and %d seconds to go" % (waiting_time_minutes,waiting_time_seconds_remainder)
+                    print "{0:d} minutes and {1:d} seconds to go".format(waiting_time_minutes, waiting_time_seconds_remainder)
                     time.sleep(60)
                 raise Exception("Request limit exceeded!")
             content = response.read()
@@ -79,7 +79,7 @@ def get_user_repos(user_login):
             if len(user_repositories) < 30:
                 break
             print "Next page..."
-        print "Got %d repositories" % len(all_user_repositories)
+        print "Got {0:d} repositories".format(len(all_user_repositories))
         return json.dumps(all_user_repositories).strip()
     except KeyboardInterrupt as e:
         return ""
@@ -121,7 +121,7 @@ if __name__ == '__main__':
                                                 if task.ready():
                                                         del task_list[task_list.index(task)]
                                                         if not task.successful():
-                                                                print "Failed to get user details for %s, retrying..." % task.login
+                                                                print "Failed to get user details for {0!s}, retrying...".format(task.login)
                                                                 new_task = pool.apply_async(get_user_repos,[task.login])
                                                                 new_task.login = task.login
                                                                 task_list.append(new_task)

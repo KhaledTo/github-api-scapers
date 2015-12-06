@@ -20,17 +20,17 @@ con = None
 
 def establish_connection():
 	global con
-	print "Establishing connection in process %d..." % os.getpid()
+	print "Establishing connection in process {0:d}...".format(os.getpid())
 	con = httplib.HTTPSConnection('api.github.com',443)
 
 def get_user_details(user_login,user_id):
     global con
     try:
-        print "Getting details for %s (%d)" % (user_login,user_id)
+        print "Getting details for {0!s} ({1:d})".format(user_login, user_id)
         if not con:
             establish_connection()
         try:
-            con.request('GET','/users/%s?access_token=%s' % (user_login,ACCESS_TOKEN))
+            con.request('GET','/users/{0!s}?access_token={1!s}'.format(user_login, ACCESS_TOKEN))
             response = con.getresponse()
         except:
             print "Connection error, recreating and retrying in 5 seconds..."
@@ -38,7 +38,7 @@ def get_user_details(user_login,user_id):
             con = None
             raise Exception("Connection failed!")
         if response.status == 404:
-            print "User %s does not exist..." % user_login
+            print "User {0!s} does not exist...".format(user_login)
             return ""
         elif response.status != 200 and response.status != 403:
             print response.status,response.read()
@@ -47,7 +47,7 @@ def get_user_details(user_login,user_id):
             raise Exception("connection failed!")
         remaining_requests = int(response.getheader('x-ratelimit-remaining'))
         reset_time = datetime.datetime.fromtimestamp(int(response.getheader('x-ratelimit-reset')))
-        print "%d requests remaining..." % (remaining_requests)
+        print "{0:d} requests remaining...".format((remaining_requests))
         if remaining_requests == 0:
             print "Allowed requests depleted, waiting..."
             while True:
@@ -57,7 +57,7 @@ def get_user_details(user_login,user_id):
                 waiting_time_seconds = (reset_time-datetime.datetime.now()).total_seconds()
                 waiting_time_minutes = int(waiting_time_seconds/60)
                 waiting_time_seconds_remainder = int(waiting_time_seconds) % 60
-                print "%d minutes and %d seconds to go" % (waiting_time_minutes,waiting_time_seconds_remainder)
+                print "{0:d} minutes and {1:d} seconds to go".format(waiting_time_minutes, waiting_time_seconds_remainder)
                 time.sleep(60)
             raise Exception("Request limit exceeded!")
         content = response.read()
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
         task_list = []
         if since_id > 10000:
-            print "Fast-forwarding to user-id %s in user file, this can take a while..." % str(since_id)
+            print "Fast-forwarding to user-id {0!s} in user file, this can take a while...".format(str(since_id))
         with open(users_filename,"rb") as users_file, \
                  open(output_filename,"ab") as output_file:
                 try:
@@ -105,7 +105,7 @@ if __name__ == '__main__':
                                                 if task.ready():
                                                         del task_list[task_list.index(task)]
                                                         if not task.successful():
-                                                                print "Failed to get user details for %s, retrying..." % task.user['login']
+                                                                print "Failed to get user details for {0!s}, retrying...".format(task.user['login'])
                                                                 new_task = pool.apply_async(get_user_details,[task.user['login'],task.user['id']])
                                                                 new_task.user = task.user
                                                                 task_list.append(new_task)
@@ -123,4 +123,4 @@ if __name__ == '__main__':
                     print "Quitting..."
                     exit(0) 
                 finally:
-                    print "When relaunching this script, use the following minimum ID: %d" % (min([task.user['id'] for task in task_list])-1)
+                    print "When relaunching this script, use the following minimum ID: {0:d}".format((min([task.user['id'] for task in task_list])-1))

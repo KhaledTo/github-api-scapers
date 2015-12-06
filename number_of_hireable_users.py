@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 continue
             total_users+=1
             if 'hireable' in user_details and user_details['hireable'] == True and user_details['email']:
-                print "Hireable: %s (%s)" % (user_details['login'],user_details['email'] if 'email' in user_details and user_details['email'] else '[no email given]')
+                print "Hireable: {0!s} ({1!s})".format(user_details['login'], user_details['email'] if 'email' in user_details and user_details['email'] else '[no email given]')
                 hireable_users+=1
             
-    print "Found %d hireable users from %d users in total (%2.2f %%)." % (hireable_users,total_users,float(hireable_users)/float(total_users)*100)
+    print "Found {0:d} hireable users from {1:d} users in total ({2:2.2f} %).".format(hireable_users, total_users, float(hireable_users)/float(total_users)*100)

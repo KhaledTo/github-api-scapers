@@ -18,7 +18,7 @@ if __name__ == '__main__':
     line_count_str = subprocess.check_output(["wc","-l",input_filename])
     match = re.match(r"^(\d+)",line_count_str)
     line_count = int(match.group(1))
-    print "%d lines in input file, selecting a random sample of %d" % (line_count,n_sample)
+    print "{0:d} lines in input file, selecting a random sample of {1:d}".format(line_count, n_sample)
     indices = sorted(random.sample(xrange(0,line_count),n_sample))
     with open(input_filename,"rb") as input_file, \
          open(output_filename,"wb") as output_file:

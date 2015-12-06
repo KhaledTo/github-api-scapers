@@ -52,10 +52,10 @@ if __name__ == '__main__':
                 sanitized_name = re.sub(r"[^\w\d\s]+","",city_name)
                 print sanitized_name,str(population)
                 cities_by_country[iso_code].append((sanitized_name,population))
-    compiled_countries = [(re.compile("(\A|[^\w]+)%s(\Z|[^\w]+)" % i[0],re.I),i[1]) for i in countries]
+    compiled_countries = [(re.compile("(\A|[^\w]+){0!s}(\Z|[^\w]+)".format(i[0]),re.I),i[1]) for i in countries]
     compiled_cities_by_country = defaultdict(lambda : [])
     for country,cities in cities_by_country.items():
-        compiled_cities_by_country[country] = [(re.compile("(\A|[^\w]+)%s(\Z|[^\w]+)" % x[0].replace(" ",r"\s+"),re.I),x[0],x[1]) for x in cities]
+        compiled_cities_by_country[country] = [(re.compile("(\A|[^\w]+){0!s}(\Z|[^\w]+)".format(x[0].replace(" ",r"\s+")),re.I),x[0],x[1]) for x in cities]
 
     print cities_by_country
     with open_func(filename,"rb") as input_file:

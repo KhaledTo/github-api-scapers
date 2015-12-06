@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     n_repos_total = sum(language_distribution.values())
 
-    print "%d repositories in total" % n_repos_total
+    print "{0:d} repositories in total".format(n_repos_total)
 
     for language,n_repos in language_distribution.items():
         normalized_language_distribution[language] = float(n_repos)/float(n_repos_total)*100
