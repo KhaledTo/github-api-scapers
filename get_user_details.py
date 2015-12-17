@@ -7,6 +7,7 @@ import random
 import os
 import sys
 import httplib
+import signal
 
 from settings import ACCESS_TOKEN
 
@@ -20,24 +21,25 @@ con = None
 
 def establish_connection():
 	global con
-	print "Establishing connection in process %d..." % os.getpid()
 	con = httplib.HTTPSConnection('api.github.com',443)
 
 def get_user_details(user_login,user_id):
     global con
+    signal.signal(signal.SIGINT, signal.SIG_IGN) 
+    sys.stdin.close()
     try:
         print "Getting details for %s (%d)" % (user_login,user_id)
         if not con:
             establish_connection()
         try:
-            con.request('GET','/users/%s?access_token=%s' % (user_login,ACCESS_TOKEN))
+            con.request('GET','/users/%s?access_token=%s' % (user_login,ACCESS_TOKEN),headers = {'User-Agent' : 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'})
             response = con.getresponse()
         except:
             print "Connection error, recreating and retrying in 5 seconds..."
             time.sleep(5)
             con = None
             raise Exception("Connection failed!")
-        if response.status == 404:
+	if response.status == 404:
             print "User %s does not exist..." % user_login
             return ""
         elif response.status != 200 and response.status != 403:

@@ -8,6 +8,7 @@ import os
 import sys
 import httplib
 import gzip
+import signal
 
 from settings import ACCESS_TOKEN
 
@@ -34,6 +35,7 @@ def smart_open(filename,*args,**kwargs):
 
 def get_user_repos(user_login):
     global con
+    signal.signal(signal.SIGINT, signal.SIG_IGN) 
     try:
         page = 1
         all_user_repositories = []
@@ -42,7 +44,7 @@ def get_user_repos(user_login):
             if not con:
                 establish_connection()
             try:
-                con.request('GET','/users/%s/repos?access_token=%s&page=%d' % (user_login,ACCESS_TOKEN,page))
+                con.request('GET','/users/%s/repos?access_token=%s&page=%d' % (user_login,ACCESS_TOKEN,page),headers = {'User-Agent' : 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'})
                 page+=1
                 response = con.getresponse()
             except:
